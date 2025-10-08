@@ -4,6 +4,7 @@ import (
 	"go-graphql-aggregator/internal/aggregator"
 	"go-graphql-aggregator/internal/graph"
 	"log"
+	"net"
 	"net/http"
 	"os"
 	"time"
@@ -19,19 +20,32 @@ import (
 const defaultPort = "8080"
 
 func newServer() *handler.Server {
+	httpClient := http.Client{
+		Timeout: 8 * time.Second,
+		Transport: &http.Transport{
+			DialContext: (&net.Dialer{
+				Timeout:   5 * time.Second,
+				KeepAlive: 30 * time.Second,
+			}).DialContext,
+			MaxIdleConns:          100,
+			IdleConnTimeout:       90 * time.Second,
+			TLSHandshakeTimeout:   5 * time.Second,
+		},
+	}
+
 	userFetcher := &aggregator.HTTPUserFetcher{
-		Client:  http.DefaultClient,
+		Client:  &httpClient,
 		BaseURL: "https://jsonplaceholder.typicode.com/users",
 	}
 	postsFetcher := &aggregator.HTTPPostsFetcher{
-		Client:  http.DefaultClient,
+		Client:  &httpClient,
 		BaseURL: "https://jsonplaceholder.typicode.com/posts",
 	}
 
 	agg := &aggregator.Aggregator{
 		UserFetcher:  userFetcher,
 		PostsFetcher: postsFetcher,
-		Timeout:      5 * time.Second,
+		Timeout:      6 * time.Second,
 	}
 
 	resolver := &graph.Resolver{Aggregator: agg}
