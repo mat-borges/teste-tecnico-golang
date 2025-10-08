@@ -23,12 +23,15 @@ func NewAggregator(userFetcher UserFetcher, postsFetcher PostsFetcher, timeout t
 	}
 }
 
-// GetUserSummary fetches user data and their posts, then aggregates the information.
+// GetUserSummary fetches user details and their posts, returning a summary.
 func (agg *Aggregator) GetUserSummary(ctx context.Context, userID int) (*UserSummary, error) {
 	if userID <= 0 {
 		return nil, fmt.Errorf("invalid user ID: %d", userID)
 	}
 
+	if agg.Timeout <= 0 {
+		agg.Timeout = 5 * time.Second
+	}
 	ctx, cancel := context.WithTimeout(ctx, agg.Timeout)
 	defer cancel()
 

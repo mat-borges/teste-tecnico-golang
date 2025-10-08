@@ -1,8 +1,15 @@
 version: "3.8"
+
 services:
   aggregator:
     build: .
+    container_name: go-graphql-aggregator
     ports:
-      - "8080:8080"
+      - "${SERVER_PORT:-8080}:8080"
+    env_file:
+      - .env
     environment:
-      - PORT=8080
+      # você pode sobrescrever algo aqui se quiser
+      - ENABLE_INTROSPECTION=1
+      - ENABLE_APQ=1
+    restart: unless-stopped

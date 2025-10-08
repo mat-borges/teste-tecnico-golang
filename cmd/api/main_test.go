@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"go-graphql-aggregator/internal/config"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -17,7 +18,8 @@ func Test_NewServer_InitializesCorrectly(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	srv := newServer(ctx)
+	cfg := config.LoadConfig()
+	srv := newServer(ctx, cfg)
 	assert.NotNil(srv, "server should be created successfully")
 
 	req := httptest.NewRequest("GET", "/query", nil)
@@ -33,7 +35,8 @@ func Test_NewServer_ContextCancelled(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel()
 
-	srv := newServer(ctx)
+	cfg := config.LoadConfig()
+	srv := newServer(ctx, cfg)
 	assert.Nil(srv, "server should be nil if context is cancelled")
 }
 
@@ -43,7 +46,8 @@ func Test_Main_StartupAndShutdown(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	srv := newServer(ctx)
+	cfg := config.LoadConfig()
+	srv := newServer(ctx, cfg)
 	assert.NotNil(srv, "server should initialize")
 
 	handler := http.NewServeMux()

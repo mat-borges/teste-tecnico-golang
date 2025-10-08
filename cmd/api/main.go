@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"go-graphql-aggregator/internal/aggregator"
+	"go-graphql-aggregator/internal/config"
 	"go-graphql-aggregator/internal/graph"
 	"go-graphql-aggregator/internal/middleware"
 	"log"
@@ -23,9 +24,9 @@ import (
 
 const defaultPort = "8080"
 
-func newServer(ctx context.Context) *handler.Server {
+func newServer(ctx context.Context, cfg *config.Config) *handler.Server {
 	httpClient := http.Client{
-		Timeout: 8 * time.Second,
+		Timeout: cfg.HTTPTimeout,
 		Transport: &http.Transport{
 			DialContext: (&net.Dialer{
 				Timeout:   5 * time.Second,
@@ -39,17 +40,17 @@ func newServer(ctx context.Context) *handler.Server {
 
 	userFetcher := &aggregator.HTTPUserFetcher{
 		Client:  &httpClient,
-		BaseURL: "https://jsonplaceholder.typicode.com/users",
+		BaseURL: cfg.UsersBaseURL,
 	}
 	postsFetcher := &aggregator.HTTPPostsFetcher{
 		Client:  &httpClient,
-		BaseURL: "https://jsonplaceholder.typicode.com/posts",
+		BaseURL: cfg.PostsBaseURL,
 	}
 
 	agg := &aggregator.Aggregator{
 		UserFetcher:  userFetcher,
 		PostsFetcher: postsFetcher,
-		Timeout:      6 * time.Second,
+		Timeout:      cfg.AggTimeout,
 	}
 
 	select {
@@ -83,12 +84,9 @@ func main() {
 	startupCtx, startupCancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer startupCancel()
 
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = defaultPort
-	}
+	cfg := config.LoadConfig()
 
-	srvHandler := newServer(startupCtx)
+	srvHandler := newServer(startupCtx, cfg)
 	if srvHandler == nil {
 		log.Fatal("server initialization failed (cancelled or error)")
 	}
@@ -97,7 +95,7 @@ func main() {
 	http.Handle("/query", middleware.LoggingAndRecoveryMiddleware(srvHandler))
 
 	httpServer := &http.Server{
-		Addr:         ":" + port,
+		Addr:         ":" + cfg.ServerPort,
 		ReadTimeout:  15 * time.Second,
 		WriteTimeout: 30 * time.Second,
 		IdleTimeout:  60 * time.Second,
@@ -107,7 +105,7 @@ func main() {
 	serverErrCh := make(chan error, 1)
 
 	go func() {
-		log.Printf("Starting server at http://localhost:%s/ ...", port)
+		log.Printf("Starting server at http://localhost:%s/ ...", cfg.ServerPort)
 		if err := httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			serverErrCh <- err
 		} else {

@@ -15,5 +15,6 @@ require (
 	github.com/sosodev/duration v1.3.1 // indirect
 	github.com/stretchr/testify v1.11.1
 	github.com/vektah/gqlparser/v2 v2.5.30
+	golang.org/x/sync v0.17.0
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
