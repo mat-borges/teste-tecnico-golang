@@ -1,7 +1,7 @@
 package config
 
 import (
-	"log"
+	"go-graphql-aggregator/internal/logger"
 	"os"
 	"time"
 )
@@ -22,8 +22,13 @@ func LoadConfig() *Config {
 		HTTPTimeout:  getEnvAsDuration("HTTP_TIMEOUT", 5*time.Second),
 		AggTimeout:   getEnvAsDuration("AGG_TIMEOUT", 5*time.Second),
 	}
-	log.Printf("[config] loaded (port=%s, usersURL=%s, postsURL=%s, timeouts=%s/%s)",
-		cfg.ServerPort, cfg.UsersBaseURL, cfg.PostsBaseURL, cfg.HTTPTimeout, cfg.AggTimeout)
+	logger.Log.Info("config loaded",
+		"port", cfg.ServerPort,
+		"usersURL", cfg.UsersBaseURL,
+		"postsURL", cfg.PostsBaseURL,
+		"httpTimeout", cfg.HTTPTimeout,
+		"aggTimeout", cfg.AggTimeout,
+	)
 	return cfg
 }
 
@@ -40,7 +45,7 @@ func getEnvAsDuration(key string, defaultVal time.Duration) time.Duration {
 		if err == nil {
 			return dur
 		}
-		log.Printf("[config] invalid duration for %s: %s, using default %v", key, val, defaultVal)
+		logger.Log.Info("invalid duration for env var, using default", "key", key, "val", val, "default", defaultVal)
 	}
 	return defaultVal
 }

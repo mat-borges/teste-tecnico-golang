@@ -5,6 +5,7 @@ import (
 	"go-graphql-aggregator/internal/aggregator"
 	"go-graphql-aggregator/internal/config"
 	"go-graphql-aggregator/internal/graph"
+	"go-graphql-aggregator/internal/logger"
 	"go-graphql-aggregator/internal/middleware"
 	"log"
 	"net"
@@ -21,8 +22,6 @@ import (
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/vektah/gqlparser/v2/ast"
 )
-
-const defaultPort = "8080"
 
 func newServer(ctx context.Context, cfg *config.Config) *handler.Server {
 	httpClient := http.Client{
@@ -81,6 +80,9 @@ func newServer(ctx context.Context, cfg *config.Config) *handler.Server {
 }
 
 func main() {
+	logger.Init()
+	logger.Log.Info("server starting...")
+
 	startupCtx, startupCancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer startupCancel()
 
@@ -88,7 +90,8 @@ func main() {
 
 	srvHandler := newServer(startupCtx, cfg)
 	if srvHandler == nil {
-		log.Fatal("server initialization failed (cancelled or error)")
+		logger.Log.Error("server initialization failed")
+		os.Exit(1)
 	}
 
 	http.Handle("/", middleware.LoggingAndRecoveryMiddleware(playground.Handler("GraphQL playground", "/query")))
@@ -105,7 +108,7 @@ func main() {
 	serverErrCh := make(chan error, 1)
 
 	go func() {
-		log.Printf("Starting server at http://localhost:%s/ ...", cfg.ServerPort)
+		logger.Log.Info("starting server", "port", cfg.ServerPort)
 		if err := httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			serverErrCh <- err
 		} else {
@@ -118,12 +121,12 @@ func main() {
 
 	select {
 	case sig := <-sigCh:
-		log.Printf("Received OS signal: %v — initiating graceful shutdown", sig)
+		logger.Log.Info("received OS signal, initiating shutdown", "signal", sig)
 	case err := <-serverErrCh:
 		if err != nil {
-			log.Printf("Server runtime error: %v", err)
+			logger.Log.Error("server runtime error", "error", err)
 		} else {
-			log.Printf("Server stopped normally")
+			logger.Log.Info("server stopped normally")
 		}
 	}
 
@@ -131,8 +134,8 @@ func main() {
 	defer shutdownCancel()
 
 	if err := httpServer.Shutdown(shutdownCtx); err != nil {
-		log.Printf("Error during server shutdown: %v", err)
+		logger.Log.Error("error during server shutdown", "error", err)
 	} else {
-		log.Printf("Server shutdown completed")
+		logger.Log.Info("server shutdown completed")
 	}
 }

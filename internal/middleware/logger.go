@@ -1,7 +1,7 @@
 package middleware
 
 import (
-	"log"
+	"go-graphql-aggregator/internal/logger"
 	"net/http"
 	"time"
 )
@@ -12,7 +12,11 @@ func LoggingAndRecoveryMiddleware(next http.Handler) http.Handler {
 
 		defer func() {
 			if rec := recover(); rec != nil {
-				log.Printf("[PANIC] %v — recovering and returning 500", rec)
+				logger.Log.Error("panic recovered",
+					"error", rec,
+					"path", r.URL.Path,
+					"method", r.Method,
+				)
 				http.Error(w, "internal server error", http.StatusInternalServerError)
 			}
 		}()
@@ -21,7 +25,13 @@ func LoggingAndRecoveryMiddleware(next http.Handler) http.Handler {
 		next.ServeHTTP(lrw, r)
 
 		duration := time.Since(start)
-		log.Printf("[%s] %s %d %s", r.Method, r.URL.Path, lrw.statusCode, duration)
+		logger.Log.Info("http request",
+			"method", r.Method,
+			"path", r.URL.Path,
+			"status", lrw.statusCode,
+			"remote_addr", r.RemoteAddr,
+			"duration_ms", duration.Milliseconds(),
+		)
 	})
 }
 
