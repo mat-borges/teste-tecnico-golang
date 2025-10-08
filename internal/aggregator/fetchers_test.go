@@ -71,6 +71,21 @@ func Test_HTTPUserFetcher_InvalidJSON(t *testing.T){
 	assert.Nil(user)
 }
 
+func Test_HTTPUserFetcher_CreateRequestError(t *testing.T) {
+	assert := assert.New(t)
+	mockUserFetcher := &aggregator.HTTPUserFetcher{
+		Client:  http.DefaultClient,
+		BaseURL: "://invalid-url",
+	}
+
+	user, err := mockUserFetcher.Fetch(context.Background(), 1)
+	assert.NotNil(err)
+	assert.Nil(user)
+	assert.Contains(err.Error(), "error creating user request")
+}
+
+// ---------------- POSTS -------------------
+
 func Test_HTTPPostsFetcher_Success(t *testing.T){
 	assert := assert.New(t)
 	body := `[{"userId":1},{"userId":1}]`
@@ -129,4 +144,18 @@ func Test_HTTPPostsFetcher_InvalidJSON(t *testing.T){
 
 	assert.NotNil(err)
 	assert.Nil(posts)
+}
+
+func Test_HTTPPostsFetcher_InvalidBaseURL(t *testing.T) {
+	assert := assert.New(t)
+	fetcher := &aggregator.HTTPPostsFetcher{
+		Client:  http.DefaultClient,
+		BaseURL: "://bad-url",
+	}
+
+	posts, err := fetcher.Fetch(context.Background(), 1)
+	println(err)
+	assert.NotNil(err)
+	assert.Nil(posts)
+	assert.Contains(err.Error(), "invalid posts base url")
 }
