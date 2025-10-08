@@ -1,7 +1,7 @@
 package main
 
 import (
-	"go-graphql-aggregator/graph"
+	"go-graphql-aggregator/internal/graph"
 	"log"
 	"net/http"
 	"os"
