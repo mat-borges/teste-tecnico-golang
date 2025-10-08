@@ -8,16 +8,16 @@ import (
 )
 
 type Aggregator struct {
-	httpClient 	HTTPClient
-	apiBaseURL 	string
-	timeout     time.Duration
+	UserFetcher  UserFetcher
+	PostsFetcher PostsFetcher
+	Timeout      time.Duration
 }
 
-func New(httpClient HTTPClient, apiBaseURL string, timeout time.Duration) *Aggregator {
+func NewAggregator(userFetcher UserFetcher, postsFetcher PostsFetcher, timeout time.Duration) *Aggregator {
 	return &Aggregator{
-		httpClient: httpClient,
-		apiBaseURL: apiBaseURL,
-		timeout:    timeout,
+		UserFetcher:  userFetcher,
+		PostsFetcher: postsFetcher,
+		Timeout:      timeout,
 	}
 }
 
@@ -26,7 +26,7 @@ func (agg *Aggregator) GetUserSummary(ctx context.Context, userID int) (*UserSum
 		return nil, errors.New("invalid user ID")
 	}
 
-	ctx, cancel := context.WithTimeout(ctx, agg.timeout)
+	ctx, cancel := context.WithTimeout(ctx, agg.Timeout)
 	defer cancel()
 
 	var(
@@ -40,7 +40,7 @@ func (agg *Aggregator) GetUserSummary(ctx context.Context, userID int) (*UserSum
 
 	go func(){
 		defer wg.Done()
-		u, err := FetchUser(ctx, agg.httpClient, agg, agg.apiBaseURL+"/users", userID)
+		u, err := agg.UserFetcher.Fetch(ctx, userID)
 		if err != nil {
 			errUser = err
 			return
@@ -50,7 +50,7 @@ func (agg *Aggregator) GetUserSummary(ctx context.Context, userID int) (*UserSum
 
 	go func(){
 		defer wg.Done()
-		p, err := FetchPosts(ctx, agg.httpClient, agg.apiBaseURL+"/posts")
+		p, err := agg.PostsFetcher.Fetch(ctx)
 		if err != nil {
 			errPosts = err
 			return

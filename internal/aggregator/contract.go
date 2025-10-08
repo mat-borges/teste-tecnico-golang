@@ -1,6 +1,9 @@
 package aggregator
 
-import "net/http"
+import (
+	"context"
+	"net/http"
+)
 
 type User struct {
 	ID    int    `json:"id"`
@@ -20,5 +23,13 @@ type UserSummary struct {
 
 type HTTPClient interface {
 	Do(req *http.Request) (*http.Response, error)
+}
+
+type UserFetcher interface {
+	Fetch(ctx context.Context, userID int) (*User, error)
+}
+
+type PostsFetcher interface {
+	Fetch(ctx context.Context) ([]Post, error)
 }
 
