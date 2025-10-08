@@ -1,0 +1,9 @@
+type UserSummary {
+	name: String!
+	email: String!
+	postCount: Int!
+}
+
+type Query {
+	userSummary(userId: Int!): UserSummary!
+}
