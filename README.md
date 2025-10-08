@@ -181,7 +181,7 @@ cmd/
   api/main.go     → Inicialização do servidor
 internal/
   aggregator/     → lógica de agregação e concorrência
-  fecther/        → lógica de chamada de api externa
+  fecther/        → comunicação HTTP com APIs externas
   config/         → configurações via env
   graph/          → schema e resolvers GraphQL (gqlgen)
   middleware/     → logger HTTP e recovery
