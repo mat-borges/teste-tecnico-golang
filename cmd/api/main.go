@@ -7,7 +7,6 @@ import (
 	"go-graphql-aggregator/internal/graph"
 	"go-graphql-aggregator/internal/logger"
 	"go-graphql-aggregator/internal/middleware"
-	"log"
 	"net"
 	"net/http"
 	"os"
@@ -54,7 +53,7 @@ func newServer(ctx context.Context, cfg *config.Config) *handler.Server {
 
 	select {
 	case <-ctx.Done():
-		log.Printf("Server initialization cancelled: %v", ctx.Err())
+		logger.Log.Error("Server initialization cancelled", "error", ctx.Err())
 		return nil
 	default:
 	}

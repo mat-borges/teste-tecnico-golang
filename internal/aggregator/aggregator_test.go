@@ -4,12 +4,17 @@ import (
 	"context"
 	"errors"
 	"go-graphql-aggregator/internal/aggregator"
+	"go-graphql-aggregator/internal/test"
 	"go-graphql-aggregator/internal/test/mock"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
 )
+
+func TestMain(m *testing.M) {
+	test.SetupTests(m)
+}
 
 func Test_GetUserSummary_Success(t *testing.T){
 	assert := assert.New(t)

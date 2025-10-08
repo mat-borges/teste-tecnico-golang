@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"go-graphql-aggregator/internal/config"
+	"go-graphql-aggregator/internal/test"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -11,6 +12,10 @@ import (
 
 	"github.com/stretchr/testify/assert"
 )
+
+func TestMain(m *testing.M) {
+	test.SetupTests(m)
+}
 
 func Test_NewServer_InitializesCorrectly(t *testing.T) {
 	assert := assert.New(t)

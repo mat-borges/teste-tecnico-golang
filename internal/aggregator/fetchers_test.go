@@ -11,7 +11,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-
 func Test_HTTPUserFetcher_Success(t *testing.T){
 	assert := assert.New(t)
 	body := `{"id":1,"name":"John Doe","email":"john@example.com"}`
@@ -158,7 +157,6 @@ func Test_HTTPPostsFetcher_InvalidBaseURL(t *testing.T) {
 	}
 
 	posts, err := fetcher.Fetch(context.Background(), 1)
-	println(err)
 	assert.NotNil(err)
 	assert.Nil(posts)
 	assert.Contains(err.Error(), "invalid posts base url")

@@ -4,7 +4,6 @@ import (
 	"io"
 	"log/slog"
 	"os"
-	"strings"
 )
 
 var Log *slog.Logger
@@ -16,15 +15,14 @@ var Log *slog.Logger
 func Init() {
 	mode := os.Getenv("LOG_MODE")
 
-	isTest := strings.HasSuffix(os.Args[0], ".test")
 
 	var handler slog.Handler
 
-	switch {
-	case isTest:
-		handler = slog.NewTextHandler(io.Discard, nil)
-	case mode == "json":
+	switch mode{
+	case "json":
 		handler = slog.NewJSONHandler(os.Stdout, nil)
+	case "silent":
+		handler = slog.NewTextHandler(io.Discard, nil)
 	default:
 		handler = slog.NewTextHandler(os.Stdout, nil)
 	}

@@ -6,10 +6,9 @@ import (
 	"errors"
 	"go-graphql-aggregator/internal/aggregator"
 	"go-graphql-aggregator/internal/graph"
-	"go-graphql-aggregator/internal/logger"
+	"go-graphql-aggregator/internal/test"
 	"go-graphql-aggregator/internal/test/mock"
 	"net/http/httptest"
-	"os"
 	"testing"
 
 	"github.com/99designs/gqlgen/graphql/handler"
@@ -17,9 +16,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestMain(t *testing.M) {
-	logger.Init()
-	os.Exit(t.Run())
+func TestMain(m *testing.M) {
+	test.SetupTests(m)
 }
 
 func Test_UserSummaryQuery_Success(t *testing.T) {
