@@ -14,6 +14,7 @@ type HTTPUserFetcher struct {
 	BaseURL string
 }
 
+// Fetch fetches user data by userID.
 func (fetcher *HTTPUserFetcher) Fetch(ctx context.Context, userID int) (*User, error) {
 	req, err  := http.NewRequestWithContext(ctx, http.MethodGet, fmt.Sprintf("%s/%d", fetcher.BaseURL, userID), nil)
 	if err != nil {
@@ -41,6 +42,7 @@ type HTTPPostsFetcher struct {
 	BaseURL string
 }
 
+// Fetch fetches posts by userID.
 func (fetcher *HTTPPostsFetcher) Fetch(ctx context.Context, userID int) ([]Post, error) {
 	u, err := url.Parse(fetcher.BaseURL)
 	if err != nil {

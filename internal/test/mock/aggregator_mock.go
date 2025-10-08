@@ -19,6 +19,7 @@ type MockUserFetcher struct {
 	Err  error
 }
 
+// Fetch simulates fetching a user by ID.
 func (m *MockUserFetcher) Fetch(ctx context.Context, userID int) (*aggregator.User, error) {
 	return m.User, m.Err
 }
@@ -29,6 +30,7 @@ type MockPostsFetcher struct {
 	Delay time.Duration
 }
 
+// Fetch simulates fetching posts by user ID, with an optional delay to test timeouts.
 func (m *MockPostsFetcher) Fetch(ctx context.Context, userID int) ([]aggregator.Post, error) {
 	if m.Delay > 0 {
 		select {
@@ -45,10 +47,12 @@ type MockHTTPClient struct {
 	err      error
 }
 
+// Do simulates an HTTP request.
 func (m *MockHTTPClient) Do(req *http.Request) (*http.Response, error) {
 	return m.response, m.err
 }
 
+// NewMockHTTPClient creates a new MockHTTPClient with the specified response body, status code, and error.
 func NewMockHTTPClient(body string, status int, err error) *MockHTTPClient {
 	return &MockHTTPClient{
 		response: &http.Response{

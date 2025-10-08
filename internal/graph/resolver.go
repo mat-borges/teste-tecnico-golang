@@ -16,10 +16,12 @@ type Resolver struct{
 
 type queryResolver struct{ *Resolver }
 
+// Query returns QueryResolver implementation.
 func (r *Resolver) Query() QueryResolver {
     return &queryResolver{r}
 }
 
+// UserSummary resolves the userSummary query by fetching and aggregating data.
 func (r *queryResolver) UserSummary(ctx context.Context, userID int32) (*model.UserSummary, error) {
 	aggSummary, err := r.Aggregator.GetUserSummary(ctx, int(userID))
 	if err != nil {
