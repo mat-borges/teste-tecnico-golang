@@ -33,7 +33,7 @@ func Test_GetUserSummary_InvalidUserID(t *testing.T){
 
 	assert.NotNil(err)
 	assert.Nil(summary)
-	assert.Equal("invalid user ID", err.Error())
+	assert.Contains(err.Error(), "invalid user ID")
 }
 
 func Test_GetUserSummary_FetchUserError(t *testing.T){

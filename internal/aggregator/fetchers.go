@@ -3,7 +3,6 @@ package aggregator
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -18,21 +17,21 @@ type HTTPUserFetcher struct {
 func (fetcher *HTTPUserFetcher) Fetch(ctx context.Context, userID int) (*User, error) {
 	req, err  := http.NewRequestWithContext(ctx, http.MethodGet, fmt.Sprintf("%s/%d", fetcher.BaseURL, userID), nil)
 	if err != nil {
-		return nil, errors.New("error creating user request: " + err.Error())
+		return nil, fmt.Errorf("creating user request: %w", err)
 	}
 	res, err := fetcher.Client.Do(req)
 	if err != nil {
-		return nil, errors.New("error doing user request: " + err.Error())
+		return nil, fmt.Errorf("doing user request: %w", err)
 	}
 	defer res.Body.Close()
 
 	if res.StatusCode != http.StatusOK {
-		return nil, errors.New("error fetching user: status code " + fmt.Sprintf("%d", res.StatusCode))
+		return nil, fmt.Errorf("fetching user: status code %d", res.StatusCode)
 	}
 
 	var user User
 	if err := json.NewDecoder(res.Body).Decode(&user); err != nil {
-		return nil, errors.New("error decoding user response: " + err.Error())
+		return nil, fmt.Errorf("decoding user response: %w", err)
 	}
 	return &user, nil
 }
@@ -46,7 +45,7 @@ type HTTPPostsFetcher struct {
 func (fetcher *HTTPPostsFetcher) Fetch(ctx context.Context, userID int) ([]Post, error) {
 	u, err := url.Parse(fetcher.BaseURL)
 	if err != nil {
-		return nil, errors.New("invalid posts base url: " + err.Error())
+		return nil, fmt.Errorf("invalid posts base url: %w", err)
 	}
 
 	q := u.Query()
@@ -57,22 +56,22 @@ func (fetcher *HTTPPostsFetcher) Fetch(ctx context.Context, userID int) ([]Post,
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u.String(), nil)
 	if err != nil {
-		return nil, errors.New("error creating posts request: " + err.Error())
+		return nil, fmt.Errorf("creating posts request: %w", err)
 	}
 
 	res, err := fetcher.Client.Do(req)
 	if err != nil {
-		return nil, errors.New("error doing posts request: " + err.Error())
+		return nil, fmt.Errorf("doing posts request: %w", err)
 	}
 	defer res.Body.Close()
 
 	if res.StatusCode != http.StatusOK {
-		return nil, errors.New("error fetching posts: status code " + fmt.Sprintf("%d", res.StatusCode))
+		return nil, fmt.Errorf("fetching posts: status code %d", res.StatusCode)
 	}
 
 	var posts []Post
 	if err := json.NewDecoder(res.Body).Decode(&posts); err != nil {
-		return nil, errors.New("error decoding posts response: " + err.Error())
+		return nil, fmt.Errorf("decoding posts response: %w", err)
 	}
 	return posts, nil
 }

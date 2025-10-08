@@ -41,7 +41,7 @@ func Test_HTTPUserFetcher_StatusError(t *testing.T){
 
 	assert.NotNil(err)
 	assert.Nil(user)
-	assert.Contains(err.Error(), "error fetching user: status code 500")
+	assert.Contains(err.Error(), "fetching user: status code 500")
 }
 
 func Test_HTTPUserFetcher_RequestError(t *testing.T){
@@ -55,6 +55,7 @@ func Test_HTTPUserFetcher_RequestError(t *testing.T){
 	user, err := mockUserFetcher.Fetch(context.Background(), 1)
 	assert.NotNil(err)
 	assert.Nil(user)
+	assert.Contains(err.Error(), "doing user request")
 }
 
 func Test_HTTPUserFetcher_InvalidJSON(t *testing.T){
@@ -69,6 +70,7 @@ func Test_HTTPUserFetcher_InvalidJSON(t *testing.T){
 
 	assert.NotNil(err)
 	assert.Nil(user)
+	assert.Contains(err.Error(), "decoding user response")
 }
 
 func Test_HTTPUserFetcher_CreateRequestError(t *testing.T) {
@@ -81,7 +83,7 @@ func Test_HTTPUserFetcher_CreateRequestError(t *testing.T) {
 	user, err := mockUserFetcher.Fetch(context.Background(), 1)
 	assert.NotNil(err)
 	assert.Nil(user)
-	assert.Contains(err.Error(), "error creating user request")
+	assert.Contains(err.Error(), "creating user request")
 }
 
 // ---------------- POSTS -------------------
@@ -115,7 +117,7 @@ func Test_HTTPPostsFetcher_StatusError(t *testing.T){
 
 	assert.NotNil(err)
 	assert.Nil(posts)
-	assert.Contains(err.Error(), "error fetching posts: status code 500")
+	assert.Contains(err.Error(), "fetching posts: status code 500")
 }
 
 func Test_HTTPPostsFetcher_RequestError(t *testing.T){
@@ -130,6 +132,7 @@ func Test_HTTPPostsFetcher_RequestError(t *testing.T){
 
 	assert.NotNil(err)
 	assert.Nil(posts)
+	assert.Contains(err.Error(), "doing posts request")
 }
 
 func Test_HTTPPostsFetcher_InvalidJSON(t *testing.T){
@@ -144,6 +147,7 @@ func Test_HTTPPostsFetcher_InvalidJSON(t *testing.T){
 
 	assert.NotNil(err)
 	assert.Nil(posts)
+	assert.Contains(err.Error(), "decoding posts response")
 }
 
 func Test_HTTPPostsFetcher_InvalidBaseURL(t *testing.T) {
