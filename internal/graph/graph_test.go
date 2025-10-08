@@ -19,12 +19,8 @@ import (
 func Test_UserSummaryQuery_Success(t *testing.T) {
 	assert := assert.New(t)
 	mockAgg := &aggregator.Aggregator{
-		UserFetcher: &mock.MockUserFetcher{
-			User: &aggregator.User{ID: 1, Name: "John Doe", Email: "john@example.com"},
-		},
-		PostsFetcher: &mock.MockPostsFetcher{
-			Posts: []aggregator.Post{{UserID: 1}, {UserID: 1}, {UserID: 2}},
-		},
+		UserFetcher: &mock.MockUserFetcher{User: mock.UserMock},
+		PostsFetcher: &mock.MockPostsFetcher{Posts: mock.PostsMock},
 		Timeout: 0,
 	}
 
@@ -63,12 +59,8 @@ func Test_UserSummaryQuery_UserFetcherError(t *testing.T) {
 	assert := assert.New(t)
 
 	mockAgg := &aggregator.Aggregator{
-		UserFetcher: &mock.MockUserFetcher{
-			Err: errors.New("user fetch failed"),
-		},
-		PostsFetcher: &mock.MockPostsFetcher{
-			Posts: []aggregator.Post{{UserID: 1}, {UserID: 1}, {UserID: 2}},
-		},
+		UserFetcher: &mock.MockUserFetcher{Err: errors.New("user fetch failed")},
+		PostsFetcher: &mock.MockPostsFetcher{Posts: mock.PostsMock},
 	}
 
 	resolver := &graph.Resolver{Aggregator: mockAgg}
@@ -93,7 +85,7 @@ func Test_UserSummaryQuery_UserFetcherError(t *testing.T) {
 	err := json.NewDecoder(w.Body).Decode(&resp)
 	assert.Nil(err)
 	assert.Len(resp.Errors, 1)
-	assert.Contains(resp.Errors[0].Message, "failed to fetch user data: user fetch failed")
+	assert.Contains(resp.Errors[0].Message, "failed to fetch user! user fetch failed")
 	assert.Nil(resp.Data["userSummary"])
 }
 
@@ -101,9 +93,7 @@ func Test_UserSummaryQuery_PostsFetcherError(t *testing.T) {
 	assert := assert.New(t)
 
 	mockAgg := &aggregator.Aggregator{
-		UserFetcher: &mock.MockUserFetcher{
-			User: &aggregator.User{ID: 1, Name: "John Doe", Email: "john@example.com"},
-		},
+		UserFetcher: &mock.MockUserFetcher{User: mock.UserMock},
 		PostsFetcher: &mock.MockPostsFetcher{Err: errors.New("posts fetch failed")},
 	}
 
@@ -129,7 +119,7 @@ func Test_UserSummaryQuery_PostsFetcherError(t *testing.T) {
 	_ = json.NewDecoder(w.Body).Decode(&resp)
 
 	assert.Len(resp.Errors, 1)
-	assert.Contains(resp.Errors[0].Message, "failed to fetch posts data")
+	assert.Contains(resp.Errors[0].Message, "failed to fetch posts! posts fetch failed")
 }
 
 func Test_UserSummaryQuery_InvalidUserID(t *testing.T) {

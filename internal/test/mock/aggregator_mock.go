@@ -14,7 +14,6 @@ var (
 	PostsMock = []aggregator.Post{{UserID: 1}, {UserID: 1}}
 )
 
-
 type MockUserFetcher struct {
 	User *aggregator.User
 	Err  error
