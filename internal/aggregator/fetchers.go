@@ -20,6 +20,11 @@ func (fetcher *HTTPUserFetcher) Fetch(ctx context.Context, userID int) (*User, e
 		return nil, err
 	}
 
+	defer res.Body.Close()
+	if res.StatusCode != http.StatusOK {
+		return nil, errors.New("error fetching user: status code " + fmt.Sprintf("%d", res.StatusCode))
+	}
+
 	var user User
 	if err := json.NewDecoder(res.Body).Decode(&user); err != nil {
 		return nil, err
@@ -40,7 +45,7 @@ func (fetcher *HTTPPostsFetcher) Fetch(ctx context.Context) ([]Post, error) {
 	}
 
 	defer res.Body.Close()
-	if res.StatusCode >= 400 {
+	if res.StatusCode != http.StatusOK {
 		return nil, errors.New("error fetching posts: status code " + fmt.Sprintf("%d", res.StatusCode))
 	}
 
