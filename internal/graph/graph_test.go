@@ -155,3 +155,36 @@ func Test_UserSummaryQuery_InvalidUserID(t *testing.T) {
 	assert.Contains(resp.Errors[0].Message, "invalid user ID")
 	assert.Nil(resp.Data["userSummary"])
 }
+
+func Test_UserSummaryQuery_MalformedRequest(t *testing.T) {
+	assert := assert.New(t)
+
+	mockAgg := &aggregator.Aggregator{
+		UserFetcher: &mock.MockUserFetcher{},
+		PostsFetcher: &mock.MockPostsFetcher{},
+	}
+
+	resolver := &graph.Resolver{Aggregator: mockAgg}
+	srv := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{Resolvers: resolver}))
+	srv.AddTransport(transport.POST{})
+
+	body := `{"query": "query { userSummary(userId: ) { name email postCount } }"}`
+	req := httptest.NewRequest("POST", "/query", bytes.NewBufferString(body))
+	req.Header.Set("Content-Type", "application/json")
+	w := httptest.NewRecorder()
+
+	srv.ServeHTTP(w, req)
+
+	assert.GreaterOrEqual(w.Code, 400)
+
+	var resp struct {
+		Data   map[string]any
+		Errors []struct {
+			Message string
+		}
+	}
+	err := json.NewDecoder(w.Body).Decode(&resp)
+	assert.Nil(err)
+	assert.Len(resp.Errors, 1)
+	assert.Nil(resp.Data["userSummary"])
+}
