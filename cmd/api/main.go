@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/handler/extension"
@@ -36,6 +37,7 @@ func main() {
 	aggregatorInstance := &aggregator.Aggregator{
 		UserFetcher:  userFetcher,
 		PostsFetcher: postsFetcher,
+		Timeout:      time.Second * 5,
 	}
 	resolver := &graph.Resolver{
 		Aggregator: aggregatorInstance,
