@@ -38,16 +38,15 @@ query {
 - **log/slog** — logging estruturado nativo
 - **Docker + docker-compose**
 - **Middleware customizado** — logs HTTP e panic recovery
-
----
+- **Makefile** - automatização de testes e build
 
 ## ⚙️ Arquitetura e design
 
 - As duas APIs REST são consumidas **concorrentemente** usando `errgroup.WithContext`.
-- Cada requisição é limitada por **timeout configurável (`AGG_TIMEOUT`)**.
-- **HTTP client** otimizado com pool de conexões e timeouts de rede.
-- **Logs estruturados** (texto ou JSON via `LOG_MODE`), incluindo tempos de execução.
-- **Variáveis de ambiente centralizadas** via `internal/config/config.go`.
+- Cada requisição tem **timeout configurável (`AGG_TIMEOUT`)**.
+- **HTTP client** otimizado com reuso de conexões.
+- **Logs estruturados** com `log/slog`, suportando `text`, `json` ou `silent`.
+- **Variáveis de ambiente centralizadas** via `internal/config`.
 - **Graceful shutdown** e **tratamento de panic** integrados.
 
 ---
@@ -81,9 +80,6 @@ go mod tidy
 go run cmd/api/main.go
 ```
 
-Acesse o playground:
-👉 [http://localhost:8080/](http://localhost:8080/)
-
 ---
 
 ### Com Docker
@@ -101,28 +97,80 @@ docker-compose up --build
 
 ---
 
+Acesse o playground:
+👉 [http://localhost:8080/](http://localhost:8080/)
+
+---
+
 ## 🧪 Testes
+
+O projeto possui um **Makefile** que automatiza os testes e geração de relatórios de cobertura.
+Ele foca apenas nos pacotes principais (`aggregator`, `graph` e `fetchers`) para resultados relevantes.
+
+### Manualmente
 
 ```bash
 go test ./... -coverprofile=coverage.out
 go tool cover -func=coverage.out
 ```
 
+### Makerfile
+
+#### 🔹 Rodar testes silenciosos
+
+```bash
+make test
+```
+
+#### 🔹 Gerar relatório HTML de cobertura
+
+```bash
+make test-report
+```
+
+Isso cria o arquivo `coverage.html`, que pode ser aberto no navegador.
+
+#### 🔹 Limpar arquivos temporários
+
+```bash
+make clean
+```
+
+### 🪄 Como usar o Makefile no Windows
+
+Se aparecer o erro:
+
+```
+'make' não é reconhecido como um comando interno
+ou externo...
+```
+
+➡️ Soluções:
+
+1. **Usar Git Bash**: abra o terminal Git Bash e rode `make test`.
+2. **Instalar make via Chocolatey:**
+
+   ```bash
+   choco install make
+   ```
+
+3. **Ou executar os comandos Go manualmente:**
+
+   ```bash
+   go test ./internal/aggregator/... ./internal/graph/... ./internal/fetchers/... -v -cover
+   ```
+
 ---
 
 ## 📊 Logs
 
-Modo texto (padrão):
+Configure o formato via variável de ambiente `LOG_MODE`:
 
-```
-time=2025-10-08T15:25:42Z level=INFO msg="fetch user done" userId=1
-```
-
-Modo JSON:
-
-```bash
-
-```
+| Valor           | Descrição                    |
+| --------------- | ---------------------------- |
+| `text` (padrão) | Logs legíveis no terminal    |
+| `json`          | Estruturado para produção    |
+| `silent`        | Silencia logs durante testes |
 
 ---
 
@@ -130,20 +178,30 @@ Modo JSON:
 
 ```
 cmd/
-	api/main.go   → Inicialização do servidor
+  api/main.go     → Inicialização do servidor
 internal/
-  aggregator/     → Lógica de agregação e concorrência
-  config/         → Configurações via env
-  graph/          → Schema e resolvers gqlgen
-  middleware/     → Logs HTTP, recovery
-  logger/         → Configuração global de slog
+  aggregator/     → lógica de agregação e concorrência
+  fecther/        → lógica de chamada de api externa
+  config/         → configurações via env
+  graph/          → schema e resolvers GraphQL (gqlgen)
+  middleware/     → logger HTTP e recovery
+  logger/         → setup do slog global
+  test/           → inicialização do servidor
+Makefile          → automação de testes e build
 ```
 
 ---
 
 ## 💬 Notas finais
 
-- As requisições externas são **concorrentes** e respeitam contexto e timeout.
+- Código segue princípios de **Clean Code** e **SOLID**.
+- As requisições externas são **concorrentes** e canceláveis.
 - `errgroup.WithContext` cancela a outra chamada automaticamente em caso de erro.
-- Código segue princípios de **Clean Code e SOLID**.
-- Preparado para **deploy em container** e observabilidade básica.
+- Cobertura de testes alta nos módulos críticos.
+- Docker e Makefile prontos para CI/CD e execução local.
+- Logs estruturados, prontos para observabilidade.
+
+---
+
+**Autor:** Mateus Borges
+📍 Campinas/SP — [github.com/mat-borges](https://github.com/mat-borges)
