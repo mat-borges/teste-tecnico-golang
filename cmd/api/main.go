@@ -18,33 +18,24 @@ import (
 
 const defaultPort = "8080"
 
-func main() {
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = defaultPort
-	}
-
+func newServer() *handler.Server {
 	userFetcher := &aggregator.HTTPUserFetcher{
 		Client:  http.DefaultClient,
 		BaseURL: "https://jsonplaceholder.typicode.com/users",
 	}
-
 	postsFetcher := &aggregator.HTTPPostsFetcher{
 		Client:  http.DefaultClient,
 		BaseURL: "https://jsonplaceholder.typicode.com/posts",
 	}
 
-	aggregatorInstance := &aggregator.Aggregator{
+	agg := &aggregator.Aggregator{
 		UserFetcher:  userFetcher,
 		PostsFetcher: postsFetcher,
-		Timeout:      time.Second * 5,
-	}
-	resolver := &graph.Resolver{
-		Aggregator: aggregatorInstance,
+		Timeout:      5 * time.Second,
 	}
 
+	resolver := &graph.Resolver{Aggregator: agg}
 	srv := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{Resolvers: resolver}))
-
 
 	srv.AddTransport(transport.Options{})
 	srv.AddTransport(transport.GET{})
@@ -56,6 +47,17 @@ func main() {
 	srv.Use(extension.AutomaticPersistedQuery{
 		Cache: lru.New[string](100),
 	})
+
+	return srv
+}
+
+func main() {
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = defaultPort
+	}
+
+	srv := newServer()
 
 	http.Handle("/", playground.Handler("GraphQL playground", "/query"))
 	http.Handle("/query", srv)
