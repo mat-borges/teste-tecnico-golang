@@ -1,0 +1,43 @@
+# Go build artifacts
+/bin/
+/build/
+/dist/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+# Dependency directories
+/vendor/
+Gopkg.lock
+Gopkg.toml
+
+# IDE/editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*.bak
+
+# Logs
+*.log
+
+# Docker
+*.env
+docker-compose.override.yml
+
+# Test coverage
+coverage.out
+
+# Node (if using for GraphQL playground or docs)
+node_modules/
+npm-debug.log*
+
+# Misc
+.DS_Store
+Thumbs.db
+.env.local
+.env.*
