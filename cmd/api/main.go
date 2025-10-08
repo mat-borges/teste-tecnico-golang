@@ -1,6 +1,7 @@
 package main
 
 import (
+	"go-graphql-aggregator/internal/aggregator"
 	"go-graphql-aggregator/internal/graph"
 	"log"
 	"net/http"
@@ -22,7 +23,26 @@ func main() {
 		port = defaultPort
 	}
 
-	srv := handler.New(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{}}))
+	userFetcher := &aggregator.HTTPUserFetcher{
+		Client:  http.DefaultClient,
+		BaseURL: "https://jsonplaceholder.typicode.com/users",
+	}
+
+	postsFetcher := &aggregator.HTTPPostsFetcher{
+		Client:  http.DefaultClient,
+		BaseURL: "https://jsonplaceholder.typicode.com/posts",
+	}
+
+	aggregatorInstance := &aggregator.Aggregator{
+		UserFetcher:  userFetcher,
+		PostsFetcher: postsFetcher,
+	}
+	resolver := &graph.Resolver{
+		Aggregator: aggregatorInstance,
+	}
+
+	srv := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{Resolvers: resolver}))
+
 
 	srv.AddTransport(transport.Options{})
 	srv.AddTransport(transport.GET{})
@@ -38,6 +58,6 @@ func main() {
 	http.Handle("/", playground.Handler("GraphQL playground", "/query"))
 	http.Handle("/query", srv)
 
-	log.Printf("connect to http://localhost:%s/ for GraphQL playground", port)
+	log.Printf("Server running at http://localhost:%s/", port)
 	log.Fatal(http.ListenAndServe(":"+port, nil))
 }

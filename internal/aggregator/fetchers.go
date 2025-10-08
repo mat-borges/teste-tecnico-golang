@@ -9,13 +9,13 @@ import (
 )
 
 type HTTPUserFetcher struct {
-	client  HTTPClient
-	baseURL string
+	Client  HTTPClient
+	BaseURL string
 }
 
 func (fetcher *HTTPUserFetcher) Fetch(ctx context.Context, userID int) (*User, error) {
-	req, _ := http.NewRequestWithContext(ctx, http.MethodGet, fmt.Sprintf("%s/%d", fetcher.baseURL, userID), nil)
-	res, err := fetcher.client.Do(req)
+	req, _ := http.NewRequestWithContext(ctx, http.MethodGet, fmt.Sprintf("%s/%d", fetcher.BaseURL, userID), nil)
+	res, err := fetcher.Client.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -28,13 +28,13 @@ func (fetcher *HTTPUserFetcher) Fetch(ctx context.Context, userID int) (*User, e
 }
 
 type HTTPPostsFetcher struct {
-	client  HTTPClient
-	baseURL string
+	Client  HTTPClient
+	BaseURL string
 }
 
 func (fetcher *HTTPPostsFetcher) Fetch(ctx context.Context) ([]Post, error) {
-	req, _ := http.NewRequestWithContext(ctx, http.MethodGet, fetcher.baseURL, nil)
-	res, err := fetcher.client.Do(req)
+	req, _ := http.NewRequestWithContext(ctx, http.MethodGet, fetcher.BaseURL, nil)
+	res, err := fetcher.Client.Do(req)
 	if err != nil {
 		return nil, err
 	}
