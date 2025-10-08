@@ -2,10 +2,10 @@ package aggregator
 
 import (
 	"context"
-	"errors"
 	"fmt"
-	"sync"
 	"time"
+
+	"golang.org/x/sync/errgroup"
 )
 
 type Aggregator struct {
@@ -32,54 +32,36 @@ func (agg *Aggregator) GetUserSummary(ctx context.Context, userID int) (*UserSum
 	ctx, cancel := context.WithTimeout(ctx, agg.Timeout)
 	defer cancel()
 
-	var(
-		wg 	 	sync.WaitGroup
-		user 	*User
-		posts 	[]Post
-		errOnce sync.Once
-		errVar error
-	)
+	var user *User
+	var posts []Post
 
-	setErr := func(err error) {
-		errOnce.Do(func() {
-			errVar = errors.New(err.Error())
-			cancel()
-		})
-	}
+	g, ctx := errgroup.WithContext(ctx)
 
-	wg.Add(2)
-
-	go func(){
-		defer wg.Done()
+	g.Go(func() error {
 		u, err := agg.UserFetcher.Fetch(ctx, userID)
 		if err != nil {
-			setErr(fmt.Errorf("failed to fetch user! %w", err))
-			return
+			return fmt.Errorf("fetching user: %w", err)
 		}
 		user = u
-	}()
+		return nil
+	})
 
-	go func(){
-		defer wg.Done()
+	g.Go(func() error {
 		p, err := agg.PostsFetcher.Fetch(ctx, userID)
 		if err != nil {
-			setErr(fmt.Errorf("failed to fetch posts! %w", err))
-			return
+			return fmt.Errorf("fetching posts: %w", err)
 		}
 		posts = p
-	}()
+		return nil
+	})
 
-	wg.Wait()
-
-	if errVar != nil {
-		return nil, errVar
+	if err := g.Wait(); err != nil {
+		return nil, err
 	}
-
-	postCount := len(posts)
 
 	return &UserSummary{
 		Name:      user.Name,
 		Email:     user.Email,
-		PostCount: postCount,
+		PostCount: len(posts),
 	}, nil
 }

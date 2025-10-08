@@ -46,7 +46,7 @@ func Test_GetUserSummary_FetchUserError(t *testing.T){
 
 	assert.NotNil(err)
 	assert.Nil(summary)
-	assert.Equal("failed to fetch user! user not found", err.Error())
+	assert.Equal("fetching user: user not found", err.Error())
 }
 
 func Test_GetUserSummary_FetchPostsError(t *testing.T){
@@ -58,7 +58,7 @@ func Test_GetUserSummary_FetchPostsError(t *testing.T){
 
 	assert.NotNil(err)
 	assert.Nil(summary)
-	assert.Equal("failed to fetch posts! fetch posts error", err.Error())
+	assert.Equal("fetching posts: fetch posts error", err.Error())
 }
 
 func TestAggregator_GetUserSummary_Timeout(t *testing.T) {
