@@ -47,6 +47,21 @@ func Test_HTTPUserFetcher_Success(t *testing.T){
 	assert.Equal("John Doe", user.Name)
 }
 
+func Test_HTTPUserFetcher_StatusError(t *testing.T){
+	assert := assert.New(t)
+	mockHTTPClient := newMockHTTPClient("", http.StatusInternalServerError, nil)
+	mockUserFetcher := &HTTPUserFetcher{
+		Client:  mockHTTPClient,
+		BaseURL: "http://example.com/users",
+	}
+
+	user, err := mockUserFetcher.Fetch(context.Background(), 1)
+
+	assert.NotNil(err)
+	assert.Nil(user)
+	assert.Contains(err.Error(), "error fetching user: status code 500")
+}
+
 func Test_HTTPUserFetcher_RequestError(t *testing.T){
 	assert := assert.New(t)
 	mockHTTPClient := newMockHTTPClient("", http.StatusInternalServerError, errors.New("network error"))
