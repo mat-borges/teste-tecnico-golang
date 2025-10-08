@@ -6,7 +6,14 @@ import (
 	"go-graphql-aggregator/internal/aggregator"
 	"io"
 	"net/http"
+	"time"
 )
+
+var (
+	UserMock = &aggregator.User{ID: 1, Name: "John Doe", Email: "john@example.com"}
+	PostsMock = []aggregator.Post{{UserID: 1}, {UserID: 1}}
+)
+
 
 type MockUserFetcher struct {
 	User *aggregator.User
@@ -20,9 +27,17 @@ func (m *MockUserFetcher) Fetch(ctx context.Context, userID int) (*aggregator.Us
 type MockPostsFetcher struct {
 	Posts []aggregator.Post
 	Err   error
+	Delay time.Duration
 }
 
-func (m *MockPostsFetcher) Fetch(ctx context.Context) ([]aggregator.Post, error) {
+func (m *MockPostsFetcher) Fetch(ctx context.Context, userID int) ([]aggregator.Post, error) {
+	if m.Delay > 0 {
+		select {
+		case <-ctx.Done():
+			return nil, ctx.Err()
+		case <-time.After(m.Delay):
+		}
+	}
 	return m.Posts, m.Err
 }
 

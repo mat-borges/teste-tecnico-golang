@@ -73,18 +73,18 @@ func Test_HTTPUserFetcher_InvalidJSON(t *testing.T){
 
 func Test_HTTPPostsFetcher_Success(t *testing.T){
 	assert := assert.New(t)
-	body := `[{"userId":1},{"userId":1},{"userId":2}]`
+	body := `[{"userId":1},{"userId":1}]`
 	mockHTTPClient := mock.NewMockHTTPClient(body, http.StatusOK, nil)
 	mockPostsFetcher := &aggregator.HTTPPostsFetcher{
 		Client:  mockHTTPClient,
 		BaseURL: "http://example.com/posts",
 	}
 
-	posts, err := mockPostsFetcher.Fetch(context.Background())
+	posts, err := mockPostsFetcher.Fetch(context.Background(), 1)
 
 	assert.Nil(err)
 	assert.NotNil(posts)
-	assert.Len(posts, 3)
+	assert.Len(posts, 2)
 	assert.Equal(1, posts[0].UserID)
 }
 
@@ -96,7 +96,7 @@ func Test_HTTPPostsFetcher_StatusError(t *testing.T){
 		BaseURL: "http://example.com/posts",
 	}
 
-	posts, err := mockPostsFetcher.Fetch(context.Background())
+	posts, err := mockPostsFetcher.Fetch(context.Background(), 1)
 
 	assert.NotNil(err)
 	assert.Nil(posts)
@@ -111,7 +111,7 @@ func Test_HTTPPostsFetcher_RequestError(t *testing.T){
 		BaseURL: "http://example.com/posts",
 	}
 
-	posts, err := mockPostsFetcher.Fetch(context.Background())
+	posts, err := mockPostsFetcher.Fetch(context.Background(), 1)
 
 	assert.NotNil(err)
 	assert.Nil(posts)
@@ -125,7 +125,7 @@ func Test_HTTPPostsFetcher_InvalidJSON(t *testing.T){
 		BaseURL: "http://example.com/posts",
 	}
 
-	posts, err := mockPostsFetcher.Fetch(context.Background())
+	posts, err := mockPostsFetcher.Fetch(context.Background(), 1)
 
 	assert.NotNil(err)
 	assert.Nil(posts)
