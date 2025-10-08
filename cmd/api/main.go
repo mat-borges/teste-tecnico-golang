@@ -108,7 +108,7 @@ func main() {
 	serverErrCh := make(chan error, 1)
 
 	go func() {
-		logger.Log.Info("starting server", "port", cfg.ServerPort)
+		logger.Log.Info("server started", "port", cfg.ServerPort)
 		if err := httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			serverErrCh <- err
 		} else {
