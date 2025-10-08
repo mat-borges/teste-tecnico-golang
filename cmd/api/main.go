@@ -4,6 +4,7 @@ import (
 	"context"
 	"go-graphql-aggregator/internal/aggregator"
 	"go-graphql-aggregator/internal/graph"
+	"go-graphql-aggregator/internal/middleware"
 	"log"
 	"net"
 	"net/http"
@@ -68,10 +69,12 @@ func newServer(ctx context.Context) *handler.Server {
 
 	srv.SetQueryCache(lru.New[*ast.QueryDocument](1000))
 
-	srv.Use(extension.Introspection{})
-	srv.Use(extension.AutomaticPersistedQuery{
-		Cache: lru.New[string](100),
-	})
+	if os.Getenv("ENABLE_INTROSPECTION") == "1" {
+		srv.Use(extension.Introspection{})
+	}
+	if os.Getenv("ENABLE_APQ") == "1" {
+		srv.Use(extension.AutomaticPersistedQuery{Cache: lru.New[string](100)})
+	}
 
 	return srv
 }
@@ -90,8 +93,8 @@ func main() {
 		log.Fatal("server initialization failed (cancelled or error)")
 	}
 
-	http.Handle("/", playground.Handler("GraphQL playground", "/query"))
-	http.Handle("/query", srvHandler)
+	http.Handle("/", middleware.LoggingAndRecoveryMiddleware(playground.Handler("GraphQL playground", "/query")))
+	http.Handle("/query", middleware.LoggingAndRecoveryMiddleware(srvHandler))
 
 	httpServer := &http.Server{
 		Addr:         ":" + port,
