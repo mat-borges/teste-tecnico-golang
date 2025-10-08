@@ -3,35 +3,35 @@ package mock
 import (
 	"bytes"
 	"context"
-	"go-graphql-aggregator/internal/aggregator"
+	"go-graphql-aggregator/internal/fetcher"
 	"io"
 	"net/http"
 	"time"
 )
 
 var (
-	UserMock = &aggregator.User{ID: 1, Name: "John Doe", Email: "john@example.com"}
-	PostsMock = []aggregator.Post{{UserID: 1}, {UserID: 1}}
+	UserMock = &fetcher.User{ID: 1, Name: "John Doe", Email: "john@example.com"}
+	PostsMock = []fetcher.Post{{UserID: 1}, {UserID: 1}}
 )
 
 type MockUserFetcher struct {
-	User *aggregator.User
+	User *fetcher.User
 	Err  error
 }
 
 // Fetch simulates fetching a user by ID.
-func (m *MockUserFetcher) Fetch(ctx context.Context, userID int) (*aggregator.User, error) {
+func (m *MockUserFetcher) Fetch(ctx context.Context, userID int) (*fetcher.User, error) {
 	return m.User, m.Err
 }
 
 type MockPostsFetcher struct {
-	Posts []aggregator.Post
+	Posts []fetcher.Post
 	Err   error
 	Delay time.Duration
 }
 
 // Fetch simulates fetching posts by user ID, with an optional delay to test timeouts.
-func (m *MockPostsFetcher) Fetch(ctx context.Context, userID int) ([]aggregator.Post, error) {
+func (m *MockPostsFetcher) Fetch(ctx context.Context, userID int) ([]fetcher.Post, error) {
 	if m.Delay > 0 {
 		select {
 		case <-ctx.Done():

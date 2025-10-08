@@ -4,6 +4,7 @@ import (
 	"context"
 	"go-graphql-aggregator/internal/aggregator"
 	"go-graphql-aggregator/internal/config"
+	"go-graphql-aggregator/internal/fetcher"
 	"go-graphql-aggregator/internal/graph"
 	"go-graphql-aggregator/internal/logger"
 	"go-graphql-aggregator/internal/middleware"
@@ -36,11 +37,11 @@ func newServer(ctx context.Context, cfg *config.Config) *handler.Server {
 		},
 	}
 
-	userFetcher := &aggregator.HTTPUserFetcher{
+	userFetcher := &fetcher.HTTPUserFetcher{
 		Client:  &httpClient,
 		BaseURL: cfg.UsersBaseURL,
 	}
-	postsFetcher := &aggregator.HTTPPostsFetcher{
+	postsFetcher := &fetcher.HTTPPostsFetcher{
 		Client:  &httpClient,
 		BaseURL: cfg.PostsBaseURL,
 	}

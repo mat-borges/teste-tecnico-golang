@@ -1,4 +1,4 @@
-package aggregator
+package fetcher
 
 import (
 	"context"

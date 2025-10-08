@@ -3,6 +3,7 @@ package aggregator
 import (
 	"context"
 	"fmt"
+	"go-graphql-aggregator/internal/fetcher"
 	"go-graphql-aggregator/internal/logger"
 	"time"
 
@@ -10,13 +11,13 @@ import (
 )
 
 type Aggregator struct {
-	UserFetcher  UserFetcher
-	PostsFetcher PostsFetcher
+	UserFetcher  fetcher.UserFetcher
+	PostsFetcher fetcher.PostsFetcher
 	Timeout      time.Duration
 }
 
 // NewAggregator creates a new Aggregator instance.
-func NewAggregator(userFetcher UserFetcher, postsFetcher PostsFetcher, timeout time.Duration) *Aggregator {
+func NewAggregator(userFetcher fetcher.UserFetcher, postsFetcher fetcher.PostsFetcher, timeout time.Duration) *Aggregator {
 	return &Aggregator{
 		UserFetcher:  userFetcher,
 		PostsFetcher: postsFetcher,
@@ -38,8 +39,8 @@ func (agg *Aggregator) GetUserSummary(ctx context.Context, userID int) (*UserSum
 	ctx, cancel := context.WithTimeout(ctx, agg.Timeout)
 	defer cancel()
 
-	var user *User
-	var posts []Post
+	var user *fetcher.User
+	var posts []fetcher.Post
 
 	g, ctx := errgroup.WithContext(ctx)
 
