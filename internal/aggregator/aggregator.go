@@ -3,6 +3,7 @@ package aggregator
 import (
 	"context"
 	"errors"
+	"fmt"
 	"sync"
 	"time"
 )
@@ -33,8 +34,16 @@ func (agg *Aggregator) GetUserSummary(ctx context.Context, userID int) (*UserSum
 		wg 	 	sync.WaitGroup
 		user 	*User
 		posts 	[]Post
-		errUser, errPosts error
+		errOnce sync.Once
+		errVar error
 	)
+
+	setErr := func(err error) {
+		errOnce.Do(func() {
+			errVar = errors.New(err.Error())
+			cancel()
+		})
+	}
 
 	wg.Add(2)
 
@@ -42,7 +51,7 @@ func (agg *Aggregator) GetUserSummary(ctx context.Context, userID int) (*UserSum
 		defer wg.Done()
 		u, err := agg.UserFetcher.Fetch(ctx, userID)
 		if err != nil {
-			errUser = err
+			setErr(fmt.Errorf("failed to fetch user! %w", err))
 			return
 		}
 		user = u
@@ -50,9 +59,9 @@ func (agg *Aggregator) GetUserSummary(ctx context.Context, userID int) (*UserSum
 
 	go func(){
 		defer wg.Done()
-		p, err := agg.PostsFetcher.Fetch(ctx)
+		p, err := agg.PostsFetcher.Fetch(ctx, userID)
 		if err != nil {
-			errPosts = err
+			setErr(fmt.Errorf("failed to fetch posts! %w", err))
 			return
 		}
 		posts = p
@@ -60,19 +69,15 @@ func (agg *Aggregator) GetUserSummary(ctx context.Context, userID int) (*UserSum
 
 	wg.Wait()
 
-	if errUser != nil {
-		return nil, errors.New("failed to fetch user data: " + errUser.Error())
-	}
-	if errPosts != nil {
-		return nil, errors.New("failed to fetch posts data: " + errPosts.Error())
+	if errVar != nil {
+		return nil, errVar
 	}
 
-	count := 0
-	for _, post := range posts {
-		if post.UserID == userID {
-			count++
-		}
-	}
+	postCount := len(posts)
 
-	return &UserSummary{Name: user.Name, Email: user.Email, PostCount: count}, nil
+	return &UserSummary{
+		Name:      user.Name,
+		Email:     user.Email,
+		PostCount: postCount,
+	}, nil
 }

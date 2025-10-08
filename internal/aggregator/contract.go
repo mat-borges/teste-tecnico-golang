@@ -30,6 +30,6 @@ type UserFetcher interface {
 }
 
 type PostsFetcher interface {
-	Fetch(ctx context.Context) ([]Post, error)
+	Fetch(ctx context.Context, userID int) ([]Post, error)
 }
 
