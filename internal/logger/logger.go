@@ -1,17 +1,33 @@
 package logger
 
 import (
+	"io"
 	"log/slog"
 	"os"
+	"strings"
 )
 
 var Log *slog.Logger
 
+// Init inicializa o logger global.
+// Modo padrão: texto no stdout.
+// Modo json: se LOG_MODE=json.
+// Modo teste: silencioso.
 func Init() {
 	mode := os.Getenv("LOG_MODE")
-	if mode == "json" {
-		Log = slog.New(slog.NewJSONHandler(os.Stdout, nil))
-	} else {
-		Log = slog.New(slog.NewTextHandler(os.Stdout, nil))
+
+	isTest := strings.HasSuffix(os.Args[0], ".test")
+
+	var handler slog.Handler
+
+	switch {
+	case isTest:
+		handler = slog.NewTextHandler(io.Discard, nil)
+	case mode == "json":
+		handler = slog.NewJSONHandler(os.Stdout, nil)
+	default:
+		handler = slog.NewTextHandler(os.Stdout, nil)
 	}
+
+	Log = slog.New(handler)
 }
