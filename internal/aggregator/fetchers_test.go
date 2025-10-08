@@ -1,40 +1,22 @@
-package aggregator
+package aggregator_test
 
 import (
-	"bytes"
 	"context"
 	"errors"
-	"io"
+	"go-graphql-aggregator/internal/aggregator"
+	"go-graphql-aggregator/internal/test/mock"
 	"net/http"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
-type mockHTTPClient struct {
-	response *http.Response
-	err      error
-}
-
-func (m *mockHTTPClient) Do(req *http.Request) (*http.Response, error) {
-	return m.response, m.err
-}
-
-func newMockHTTPClient(body string, status int, err error) *mockHTTPClient {
-	return &mockHTTPClient{
-		response: &http.Response{
-			StatusCode: status,
-			Body:       io.NopCloser(bytes.NewBufferString(body)),
-		},
-		err: err,
-	}
-}
 
 func Test_HTTPUserFetcher_Success(t *testing.T){
 	assert := assert.New(t)
 	body := `{"id":1,"name":"John Doe","email":"john@example.com"}`
-	mockHTTPClient := newMockHTTPClient(body, http.StatusOK, nil)
-	mockUserFetcher := &HTTPUserFetcher{
+	mockHTTPClient := mock.NewMockHTTPClient(body, http.StatusOK, nil)
+	mockUserFetcher := &aggregator.HTTPUserFetcher{
 		Client:  mockHTTPClient,
 		BaseURL: "http://example.com/users",
 	}
@@ -49,8 +31,8 @@ func Test_HTTPUserFetcher_Success(t *testing.T){
 
 func Test_HTTPUserFetcher_StatusError(t *testing.T){
 	assert := assert.New(t)
-	mockHTTPClient := newMockHTTPClient("", http.StatusInternalServerError, nil)
-	mockUserFetcher := &HTTPUserFetcher{
+	mockHTTPClient := mock.NewMockHTTPClient("", http.StatusInternalServerError, nil)
+	mockUserFetcher := &aggregator.HTTPUserFetcher{
 		Client:  mockHTTPClient,
 		BaseURL: "http://example.com/users",
 	}
@@ -64,8 +46,8 @@ func Test_HTTPUserFetcher_StatusError(t *testing.T){
 
 func Test_HTTPUserFetcher_RequestError(t *testing.T){
 	assert := assert.New(t)
-	mockHTTPClient := newMockHTTPClient("", http.StatusInternalServerError, errors.New("network error"))
-	mockUserFetcher := &HTTPUserFetcher{
+	mockHTTPClient := mock.NewMockHTTPClient("", http.StatusInternalServerError, errors.New("network error"))
+	mockUserFetcher := &aggregator.HTTPUserFetcher{
 		Client:  mockHTTPClient,
 		BaseURL: "http://example.com/users",
 	}
@@ -77,8 +59,8 @@ func Test_HTTPUserFetcher_RequestError(t *testing.T){
 
 func Test_HTTPUserFetcher_InvalidJSON(t *testing.T){
 	assert := assert.New(t)
-	mockHTTPClient := newMockHTTPClient("invalid json", http.StatusOK, nil)
-	mockUserFetcher := &HTTPUserFetcher{
+	mockHTTPClient := mock.NewMockHTTPClient("invalid json", http.StatusOK, nil)
+	mockUserFetcher := &aggregator.HTTPUserFetcher{
 		Client:  mockHTTPClient,
 		BaseURL: "http://example.com/users",
 	}
@@ -92,8 +74,8 @@ func Test_HTTPUserFetcher_InvalidJSON(t *testing.T){
 func Test_HTTPPostsFetcher_Success(t *testing.T){
 	assert := assert.New(t)
 	body := `[{"userId":1},{"userId":1},{"userId":2}]`
-	mockHTTPClient := newMockHTTPClient(body, http.StatusOK, nil)
-	mockPostsFetcher := &HTTPPostsFetcher{
+	mockHTTPClient := mock.NewMockHTTPClient(body, http.StatusOK, nil)
+	mockPostsFetcher := &aggregator.HTTPPostsFetcher{
 		Client:  mockHTTPClient,
 		BaseURL: "http://example.com/posts",
 	}
@@ -108,8 +90,8 @@ func Test_HTTPPostsFetcher_Success(t *testing.T){
 
 func Test_HTTPPostsFetcher_StatusError(t *testing.T){
 	assert := assert.New(t)
-	mockHTTPClient := newMockHTTPClient("", http.StatusInternalServerError, nil)
-	mockPostsFetcher := &HTTPPostsFetcher{
+	mockHTTPClient := mock.NewMockHTTPClient("", http.StatusInternalServerError, nil)
+	mockPostsFetcher := &aggregator.HTTPPostsFetcher{
 		Client:  mockHTTPClient,
 		BaseURL: "http://example.com/posts",
 	}
@@ -123,8 +105,8 @@ func Test_HTTPPostsFetcher_StatusError(t *testing.T){
 
 func Test_HTTPPostsFetcher_RequestError(t *testing.T){
 	assert := assert.New(t)
-	mockHTTPClient := newMockHTTPClient("", http.StatusInternalServerError, errors.New("network error"))
-	mockPostsFetcher := &HTTPPostsFetcher{
+	mockHTTPClient := mock.NewMockHTTPClient("", http.StatusInternalServerError, errors.New("network error"))
+	mockPostsFetcher := &aggregator.HTTPPostsFetcher{
 		Client:  mockHTTPClient,
 		BaseURL: "http://example.com/posts",
 	}
@@ -137,8 +119,8 @@ func Test_HTTPPostsFetcher_RequestError(t *testing.T){
 
 func Test_HTTPPostsFetcher_InvalidJSON(t *testing.T){
 	assert := assert.New(t)
-	mockHTTPClient := newMockHTTPClient("invalid json", http.StatusOK, nil)
-	mockPostsFetcher := &HTTPPostsFetcher{
+	mockHTTPClient := mock.NewMockHTTPClient("invalid json", http.StatusOK, nil)
+	mockPostsFetcher := &aggregator.HTTPPostsFetcher{
 		Client:  mockHTTPClient,
 		BaseURL: "http://example.com/posts",
 	}
