@@ -205,3 +205,4 @@ Makefile          → automação de testes e build
 
 **Autor:** Mateus Borges
 📍 Campinas/SP — [github.com/mat-borges](https://github.com/mat-borges)
+---
